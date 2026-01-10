@@ -28,7 +28,7 @@
         <!-- Sidebar -->
         <div id="sidebar" class="fixed md:relative inset-y-0 left-0 z-50 md:z-auto transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-out flex flex-col w-[85vw] max-w-[380px] md:w-[380px] border-r border-gray-100 bg-white h-full shadow-2xl md:shadow-none">
             <!-- Sidebar Header -->
-            <div class="px-6 py-5 flex items-center justify-between border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50">
+            <div class="px-6 py-5 flex items-center justify-between border-b border-gray-100 bg-gray-50">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold shadow-md shadow-blue-500/30">
                         S
@@ -85,7 +85,7 @@
                          data-user-id="{{ $otherUser->id }}"
                          data-user-name="{{ $otherUser->name }}">
                         <div class="relative shrink-0">
-                            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-md">
+                            <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm">
                                 {{ strtoupper(substr($otherUser->name, 0, 1)) }}
                             </div>
                             <div class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full"></div>
@@ -148,14 +148,14 @@
         <div class="flex-1 flex flex-col h-full bg-white relative">
             
             <!-- Chat Header -->
-            <div id="chat-header" class="px-4 md:px-6 py-4 border-b border-gray-100 bg-white/80 backdrop-blur-xl sticky top-0 z-10 flex items-center justify-between">
+            <div id="chat-header" class="px-4 md:px-6 py-4 border-b border-gray-100 bg-white sticky top-0 z-10 flex items-center justify-between">
                 <div class="flex items-center gap-3">
                     <button id="open-sidebar" class="md:hidden p-2 -ml-2 rounded-xl hover:bg-gray-100 text-gray-600 transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                         </svg>
                     </button>
-                    <div id="chat-avatar" class="w-10 h-10 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center text-white font-bold shadow-md">
+                    <div id="chat-avatar" class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-bold">
                         ?
                     </div>
                     <div>
@@ -166,7 +166,7 @@
             </div>
 
             <!-- Messages Stream -->
-            <div id="messages" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-3 scroll-smooth bg-gradient-to-b from-white to-gray-50/30">
+            <div id="messages" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-3 scroll-smooth bg-gray-50">
                 <div class="flex justify-center my-8">
                     <span class="text-xs text-gray-400 font-medium bg-white px-4 py-2 rounded-full shadow-sm border border-gray-100">Select a conversation to start chatting</span>
                 </div>
@@ -311,8 +311,8 @@
             chatStatus.classList.remove('text-gray-400');
             chatStatus.classList.add('text-green-500', 'font-medium');
             chatAvatar.textContent = userName.charAt(0).toUpperCase();
-            chatAvatar.classList.remove('from-gray-300', 'to-gray-400');
-            chatAvatar.classList.add('from-blue-500', 'to-indigo-600');
+            chatAvatar.classList.remove('bg-gray-200', 'text-gray-500');
+            chatAvatar.classList.add('bg-blue-600', 'text-white');
 
             // Clear messages
             messagesDiv.innerHTML = '<div class="flex justify-center my-8"><span class="text-xs text-gray-400 font-medium bg-white px-4 py-2 rounded-full shadow-sm border border-gray-100">Today</span></div>';
@@ -339,6 +339,7 @@
             subscribeToConversation(conversationId);
         }
 
+        // Subscribe to private channel
         function subscribeToConversation(conversationId) {
             if (echoChannel) {
                 window.Echo.leave(`private-chat.${echoChannel}`);
@@ -348,7 +349,10 @@
 
             window.Echo.private(`chat.${conversationId}`)
                 .listen('.MessageSent', (e) => {
-                    appendMessage(e.message.user.name, e.message.message, e.message.user_id === currentUserId);
+                    // Only append if it's NOT from me (since I already appended mine optimistically)
+                    if (e.message.user_id !== currentUserId) {
+                        appendMessage(e.message.user.name, e.message.message, false);
+                    }
                 });
         }
 
@@ -359,6 +363,10 @@
             
             if (!message || !currentConversationId) return;
             
+            // Optimistic Update: Append message immediately
+            appendMessage(currentUserName, message, true);
+            
+            // Clear input immediately
             messageInput.value = '';
 
             try {
@@ -368,6 +376,7 @@
                 });
             } catch (error) {
                 console.error('Error sending message:', error);
+                // Optional: Show error state on the message or retry logic
             }
         });
 
@@ -391,7 +400,7 @@
                 div.className = 'flex justify-start mb-2 fade-in';
                 div.innerHTML = `
                     <div class="flex items-start gap-2 md:gap-3 max-w-[80%] md:max-w-[70%]">
-                        <div class="w-8 h-8 md:w-9 md:h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-xs font-bold text-white shrink-0 mt-1 shadow-sm">
+                        <div class="w-8 h-8 md:w-9 md:h-9 rounded-full bg-blue-100 flex items-center justify-center text-xs font-bold text-blue-600 shrink-0 mt-1">
                              ${userName.charAt(0).toUpperCase()}
                         </div>
                         <div class="flex-1">
