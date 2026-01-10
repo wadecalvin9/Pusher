@@ -38,11 +38,9 @@ class User extends Authenticatable
      *
      * @return array<string, string>
      */
-    protected function casts(): array
+    public function conversations()
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return Conversation::where('user_one_id', $this->id)
+            ->orWhere('user_two_id', $this->id);
     }
 }
