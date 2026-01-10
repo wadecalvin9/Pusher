@@ -1,6 +1,6 @@
 *.log
 .DS_Store
-.env
+
 .env.backup
 .env.production
 .phpactor.json
@@ -24,4 +24,7 @@ Homestead.yaml
 Thumbs.db
 
 .vercel
+<<<<<<< HEAD
 ".env" 
+=======
+>>>>>>> 9e579703500fb8533012059f2495d3b304cac9d7
