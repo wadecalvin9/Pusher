@@ -1,2 +1,2 @@
 # Pusher
-Simple Pusher Application with Laravel
+Simple Pusher Application with LaraveL
